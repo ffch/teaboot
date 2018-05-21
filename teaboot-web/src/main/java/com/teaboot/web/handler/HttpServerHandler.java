@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 
+import com.teaboot.context.exception.ResourceNotFoundException;
 import com.teaboot.web.entity.MappingEntity;
 import com.teaboot.web.handler.inter.StaticResourceHandler;
 import com.teaboot.web.http.HttpResponseMsg;
@@ -48,12 +49,19 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 			hrm.setResCode(HttpResponseMsg.ResCode.NOT_FOUND.getValue());
 			hrm.setMessage("你来到了无知的海洋！");
 			ctx.writeAndFlush(hrm);
+		}catch(ResourceNotFoundException e){
+			System.err.println(e.getStackTrace()[0] + "---" + e.getMessage());
+			HttpResponseMsg hrm = new HttpResponseMsg();
+			hrm.setResType(HttpResponseMsg.ResType.HTML.getValue());
+			hrm.setResCode(HttpResponseMsg.ResCode.NOT_FOUND.getValue());
+			hrm.setMessage(e.getMessage());
+			ctx.writeAndFlush(hrm);
 		}catch(Exception e){
 			System.err.println(e.getStackTrace()[0] + "---" + e.getMessage());
 			HttpResponseMsg hrm = new HttpResponseMsg();
 			hrm.setResType(HttpResponseMsg.ResType.HTML.getValue());
 			hrm.setResCode(HttpResponseMsg.ResCode.INTERNAL_ERROR.getValue());
-			hrm.setMessage(e.getStackTrace()[0].toString());
+			hrm.setMessage(e.getMessage());
 			ctx.writeAndFlush(hrm);
 		}
 	}

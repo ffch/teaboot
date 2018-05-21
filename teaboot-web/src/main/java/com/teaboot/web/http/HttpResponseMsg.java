@@ -7,6 +7,7 @@ public class HttpResponseMsg {
 	    JSON("application/json"),
 	    JS("application/javascript"),
 	    PNG("image/png"),
+	    TEXT("text/plain"),
 	    JPG("image/jpg");
 	    String value = null;
 	    ResType(String value) {

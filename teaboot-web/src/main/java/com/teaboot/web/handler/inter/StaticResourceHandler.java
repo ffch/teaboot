@@ -1,6 +1,9 @@
 package com.teaboot.web.handler.inter;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+
 import com.teaboot.context.utils.Utils;
 import com.teaboot.web.handler.ResourceHandler;
 import com.teaboot.web.http.HttpResponseMsg;
@@ -9,7 +12,7 @@ import io.netty.handler.codec.http.HttpRequest;
 public class StaticResourceHandler extends ResourceHandler {
 
 	@Override
-	public HttpResponseMsg handle(Object msg) throws Exception {
+	public HttpResponseMsg handle(Object msg) throws IOException, URISyntaxException {
 		HttpRequest hr = (HttpRequest) msg;
 		URI uri = new URI(hr.uri());
 		String url = uri.getPath();	

@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.teaboot.context.exception.ResourceNotFoundException;
+
 public class Utils {
 
 	/**
@@ -47,7 +49,9 @@ public class Utils {
 		if (in == null) {
 			in = Utils.class.getClassLoader().getResourceAsStream("resources/" + path);
 		}
-		if(in == null)throw new IOException("该资源不存在！");
+		if(in == null){
+			throw new ResourceNotFoundException("该资源不存在！");
+		}
 		String usage = "";
 		usage = readToString(in);
 

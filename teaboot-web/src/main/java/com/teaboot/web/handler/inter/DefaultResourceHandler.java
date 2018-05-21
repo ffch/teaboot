@@ -1,5 +1,6 @@
 package com.teaboot.web.handler.inter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.teaboot.context.exception.ReflectErrorException;
 import com.teaboot.context.utils.HttpUtil;
 import com.teaboot.web.entity.MappingEntity;
 import com.teaboot.web.handler.ResourceHandler;
@@ -24,12 +26,12 @@ import io.netty.handler.codec.http.HttpRequest;
 public class DefaultResourceHandler extends ResourceHandler {
 
 	@Override
-	public HttpResponseMsg handle(Object msg) throws Exception {
+	public HttpResponseMsg handle(Object msg) throws ReflectErrorException, URISyntaxException {
 		HttpRequest hr = (HttpRequest) msg;
 		URI uri = new URI(hr.uri());
 		String url = uri.getPath();
 		MappingEntity me = MappingCache.get(url);
-//		MappingCache.printTips();
+		// MappingCache.printTips();
 		if (me != null) {
 			HttpRequestMsg httpRequestMsg = new HttpRequestMsg(hr);
 			if (hr.method().equals(HttpMethod.GET) || hr.method().equals(HttpMethod.HEAD)) {
@@ -57,7 +59,13 @@ public class DefaultResourceHandler extends ResourceHandler {
 					arr[i] = null;
 				}
 			}
-			Object res = method.invoke(me.getObj(), arr);
+			Object res = null;
+			try {
+				res = method.invoke(me.getObj(), arr);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				e.printStackTrace();
+				throw new ReflectErrorException("反射调用方法过程出错");
+			}
 			ResType resType = HttpResponseMsg.ResType.enumType(me.getDataType());
 			HttpResponseMsg hrm = new HttpResponseMsg();
 			switch (resType) {
@@ -73,8 +81,16 @@ public class DefaultResourceHandler extends ResourceHandler {
 				hrm.setResType(HttpResponseMsg.ResType.JSON.getValue());
 				break;
 			case HTML:
+				String urlMsg = res.toString();
 				hrm.setResCode(HttpResponseMsg.ResCode.REDIRECT.getValue());
-				hrm.setMessage(res.toString());
+
+				hrm.setMessage(urlMsg);
+				hrm.setResType(HttpResponseMsg.ResType.HTML.getValue());
+				break;
+			case TEXT:
+				String resMsg = res.toString();
+				hrm.setResCode(HttpResponseMsg.ResCode.OK.getValue());
+				hrm.setMessage(resMsg);
 				hrm.setResType(HttpResponseMsg.ResType.HTML.getValue());
 				break;
 			default:
