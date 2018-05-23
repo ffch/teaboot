@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.HttpVersion;
 
 import java.util.List;
 
+import com.teaboot.context.utils.StringUtil;
 import com.teaboot.web.http.HttpResponseMsg;
 
 public class FullHttpResponseEncoder extends MessageToMessageEncoder<HttpResponseMsg> {
@@ -31,7 +32,11 @@ public class FullHttpResponseEncoder extends MessageToMessageEncoder<HttpRespons
 					Unpooled.wrappedBuffer(message.getMessage().getBytes(charset)));
 			response.headers().set(HttpHeaderNames.CONTENT_TYPE, message.getResType() + ";charset=" + charset);
 			response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-			if(message.getResCode() == HttpResponseMsg.ResCode.REDIRECT.getValue()){
+			if (message.getEncodedCookie() != null && message.getEncodedCookie().size() > 0){
+				for(String cookie : message.getEncodedCookie())
+					response.headers().add(HttpHeaderNames.SET_COOKIE, cookie);
+			}
+			if (message.getResCode() == HttpResponseMsg.ResCode.REDIRECT.getValue()) {
 				response.headers().set(HttpHeaderNames.LOCATION, message.getMessage());
 			}
 			// 强制keep-alive

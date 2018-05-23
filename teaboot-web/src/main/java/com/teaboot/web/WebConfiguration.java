@@ -1,12 +1,12 @@
 package com.teaboot.web;
 
-import com.teaboot.context.anno.EnableMvc;
 import com.teaboot.context.anno.PackageScan;
 import com.teaboot.context.beans.BeanCollections;
 import com.teaboot.context.common.PropertiesManager;
 import com.teaboot.context.resolver.AnnoScanResolver;
 import com.teaboot.context.resolver.DefaultAnnoScanResolver;
 import com.teaboot.context.utils.StringUtil;
+import com.teaboot.web.anno.EnableMvc;
 import com.teaboot.web.manager.WebManager;
 import com.teaboot.web.server.HttpServer;
 

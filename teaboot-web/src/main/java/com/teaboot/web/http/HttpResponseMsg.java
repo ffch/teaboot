@@ -1,5 +1,6 @@
 package com.teaboot.web.http;
 
+import java.util.List;
 
 public class HttpResponseMsg {
 	public enum ResType {  
@@ -43,6 +44,10 @@ public class HttpResponseMsg {
 	public String resType;
 	
 	public String message;
+	
+	private List<String> encodedCookie;
+	
+	private boolean responseNow = false;
 
 	public int getResCode() {
 		return resCode;
@@ -50,6 +55,13 @@ public class HttpResponseMsg {
 
 	public void setResCode(int resCode) {
 		this.resCode = resCode;
+	}
+	
+	public void setRedirect(String url){
+		setResCode(HttpResponseMsg.ResCode.REDIRECT.getValue());
+		setMessage(url);
+		setResType(HttpResponseMsg.ResType.HTML.getValue());
+		setResponseNow(true);
 	}
 
 	public String getResType() {
@@ -66,6 +78,22 @@ public class HttpResponseMsg {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public List<String> getEncodedCookie() {
+		return encodedCookie;
+	}
+
+	public void setEncodedCookie(List<String> encodedCookie) {
+		this.encodedCookie = encodedCookie;
+	}
+
+	public boolean isResponseNow() {
+		return responseNow;
+	}
+
+	public void setResponseNow(boolean responseNow) {
+		this.responseNow = responseNow;
 	}
 	
 }

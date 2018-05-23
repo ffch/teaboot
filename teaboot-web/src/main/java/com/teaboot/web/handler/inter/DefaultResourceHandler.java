@@ -26,24 +26,11 @@ import io.netty.handler.codec.http.HttpRequest;
 public class DefaultResourceHandler extends ResourceHandler {
 
 	@Override
-	public HttpResponseMsg handle(Object msg) throws ReflectErrorException, URISyntaxException {
-		HttpRequest hr = (HttpRequest) msg;
-		URI uri = new URI(hr.uri());
-		String url = uri.getPath();
+	public HttpResponseMsg handle(HttpRequestMsg httpRequestMsg) throws ReflectErrorException, URISyntaxException {
+		String url = httpRequestMsg.getUrl();
 		MappingEntity me = MappingCache.get(url);
 		// MappingCache.printTips();
 		if (me != null) {
-			HttpRequestMsg httpRequestMsg = new HttpRequestMsg(hr);
-			if (hr.method().equals(HttpMethod.GET) || hr.method().equals(HttpMethod.HEAD)) {
-				if (uri.getQuery() != null && !"".equals(uri.getQuery())) {
-					Map<String, Object> params = HttpUtil.createGetParamMap(uri.getQuery());
-					httpRequestMsg.setParams(params);
-				}
-			} else {
-				FullHttpRequest request = (FullHttpRequest) hr;
-				httpRequestMsg.setContent(request.content());
-			}
-
 			Method method = me.getMethod();
 			Class[] ct = method.getParameterTypes();
 			int count = method.getParameterCount();
@@ -67,7 +54,7 @@ public class DefaultResourceHandler extends ResourceHandler {
 				throw new ReflectErrorException("反射调用方法过程出错");
 			}
 			ResType resType = HttpResponseMsg.ResType.enumType(me.getDataType());
-			HttpResponseMsg hrm = new HttpResponseMsg();
+			HttpResponseMsg hrm = httpRequestMsg.getReponse();
 			switch (resType) {
 			case JSON:
 				if (res instanceof String)

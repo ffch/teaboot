@@ -46,6 +46,14 @@ public class EntityType{
 		}
 		return null;
 	}
+	public MethodType getInitMethod(){
+		for(String key : fieldMap.keySet()){
+			MethodType mehod = fieldMap.get(key);
+			if(mehod.beansType == BeansType.INIT)return fieldMap.get(key);
+		}
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		return "EntityType [classMap=" + classMap + ", fieldMap=" + fieldMap + ", obj=" + obj + ", beansType="

@@ -1,5 +1,7 @@
 package com.teaboot.context.beans;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,37 @@ public class BeanCollections {
 		serviceContainer.put(name, entityType);
 		size++;
 	}
+	
+	public void addFilter(String name, Object cla) {
+		EntityType entityType = new EntityType();
+		entityType.setClassMap(name);
+		entityType.setFieldMap(null);
+		entityType.setObj(cla);
+		entityType.setBeansType(BeansType.FILTER);
+		serviceContainer.put(name, entityType);
+		size++;
+	} 
+	
+	public void addComponent(String name, Object cla) {
+		EntityType entityType = new EntityType();
+		entityType.setClassMap(name);
+		entityType.setFieldMap(null);
+		entityType.setObj(cla);
+		entityType.setBeansType(BeansType.COMPONENT);
+		serviceContainer.put(name, entityType);
+		size++;
+	} 
+	
+	public <T> List<T> getObject(Class<T> clazz) {
+		List<T> objs = new ArrayList<>();
+		for (String key : serviceContainer.keySet()) {
+			EntityType tmp = serviceContainer.get(key);
+			if(tmp.getBeansType().name().equalsIgnoreCase(clazz.getSimpleName())){
+				objs.add((T)tmp.getObj());
+			}
+		}
+		return objs;
+	} 
 	
 	public void addControllor(String name, Object cla) {
 		EntityType entityType = new EntityType();
@@ -72,7 +105,8 @@ public class BeanCollections {
 		EntityType targart = null;
 		for (String key : serviceContainer.keySet()) {
 			EntityType tmp = serviceContainer.get(key);
-			if(tmp.getObj().getClass().isAssignableFrom(classz)){
+			if(classz.isAssignableFrom(tmp.getObj().getClass())){
+				System.out.println("继承关系注入：" + tmp.getObj().getClass().getName() + "----" + classz.getName());
 				if(one)throw new IllegalStateException("需要一个bean，查到了多个");
 				targart = tmp;
 				one = true;
