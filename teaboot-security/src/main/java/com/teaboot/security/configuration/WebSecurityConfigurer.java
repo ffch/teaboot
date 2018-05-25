@@ -13,8 +13,11 @@ import com.teaboot.security.http.HttpSecurity.RequestMatcher;
 import com.teaboot.security.inter.SecurityLogin;
 import com.teaboot.web.http.HttpRequestMsg;
 import com.teaboot.web.http.HttpResponseMsg;
+import com.teaboot.web.session.HttpSession;
 
 public abstract class WebSecurityConfigurer {
+	public static String sessonFlag = "TEA_BOOT_LOGIN_FALG";
+
 	public PermitType permitType = PermitType.STRICT;
 	HttpSecurity http = null;
 
@@ -91,15 +94,17 @@ public abstract class WebSecurityConfigurer {
 		boolean isLogin = authenticationHandler.handler(request, response);
 
 		if (isLogin) {
+			HttpSession session = request.getSession(true);
+			session.setAttribute(sessonFlag, sl);
 			sl.setLogin(true);
 			sl.setLogName(request.getParams().get(http.getLoginConfiguration().getUsernameKey()).toString());
 			LoginHandler loginHandler = http.getLoginConfiguration().getLoginSuccessHandler();
 			if (loginHandler != null)
 				loginHandler.handle(request, response);
-			redirectUrl = response.getMessage();
+			redirectUrl = response.getRedirectUrl();
 			if (StringUtil.isEmpty(redirectUrl)) {
 				redirectUrl = http.getLoginConfiguration().getLoginSuccessUrl();
-				if (!StringUtil.isEmpty(redirectUrl)) {
+				if (StringUtil.isEmpty(redirectUrl)) {
 					redirectUrl = "/index.html";
 				}
 			}
@@ -107,7 +112,7 @@ public abstract class WebSecurityConfigurer {
 			LoginHandler loginHandler = http.getLoginConfiguration().getLoginFailedHandler();
 			if (loginHandler != null)
 				loginHandler.handle(request, response);
-			redirectUrl = response.getMessage();
+			redirectUrl = response.getRedirectUrl();
 			if (StringUtil.isEmpty(redirectUrl)) {
 				redirectUrl = http.getLoginConfiguration().getLoginFailedUrl();
 				if (StringUtil.isEmpty(redirectUrl)) {
@@ -131,7 +136,7 @@ public abstract class WebSecurityConfigurer {
 			if (loginHandler != null)
 				loginHandler.handle(request, response);
 		}
-		String redirectUrl = response.getMessage();
+		String redirectUrl = response.getRedirectUrl();
 		if (StringUtil.isEmpty(redirectUrl)) {
 			redirectUrl = http.getLoginOutConfiguration().getLoginOutPage();
 			if (StringUtil.isEmpty(redirectUrl)) {

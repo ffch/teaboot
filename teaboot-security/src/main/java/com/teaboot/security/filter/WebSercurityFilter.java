@@ -24,7 +24,7 @@ public class WebSercurityFilter implements Filter {
 		SecurityLogin sl = null;
 		if(obj == null){
 			sl = new SecurityLogin();
-			session.setAttribute(sessonFlag, sl);
+			
 		}else{
 			sl = (SecurityLogin) obj;
 		}

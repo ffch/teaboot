@@ -7,8 +7,10 @@ import com.teaboot.context.resolver.AnnoScanResolver;
 import com.teaboot.context.resolver.DefaultAnnoScanResolver;
 import com.teaboot.context.utils.StringUtil;
 import com.teaboot.web.anno.EnableMvc;
+import com.teaboot.web.filter.WebHttpUrlFilter;
 import com.teaboot.web.manager.WebManager;
 import com.teaboot.web.server.HttpServer;
+import com.teaboot.web.session.ServerContext;
 
 /**
  * 配置注解生效
@@ -26,7 +28,9 @@ public class WebConfiguration {
 		if (portStr.matches("[0-9]+")) {
 			port = Integer.parseInt(portStr);
 		}
-		HttpServer tttpServer = new HttpServer(port);
-		WebManager.addServer(tttpServer);
+		ServerContext.registerFilter(WebHttpUrlFilter.class);
+		HttpServer httpServer = new HttpServer(port);
+		WebManager.addServer(httpServer);
+		
 	}
 }

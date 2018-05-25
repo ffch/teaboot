@@ -2,6 +2,8 @@ package com.teaboot.web.http;
 
 import java.util.List;
 
+import com.teaboot.web.session.ServerContext;
+
 public class HttpResponseMsg {
 	public enum ResType {  
 		HTML("text/html"),
@@ -45,6 +47,8 @@ public class HttpResponseMsg {
 	
 	public String message;
 	
+	public String redirectUrl;
+	
 	private List<String> encodedCookie;
 	
 	private boolean responseNow = false;
@@ -59,8 +63,21 @@ public class HttpResponseMsg {
 	
 	public void setRedirect(String url){
 		setResCode(HttpResponseMsg.ResCode.REDIRECT.getValue());
-		setMessage(url);
+		String urlPath = ServerContext.getServerPath();
+		if(url.startsWith("/")){
+			urlPath = urlPath + url.substring(1);
+		}
+		setRedirectUrl(urlPath);
 		setResType(HttpResponseMsg.ResType.HTML.getValue());
+		setMessage("");
+		setResponseNow(true);
+	}
+	
+	public void setNotFound(String url){
+		setResCode(HttpResponseMsg.ResCode.NOT_FOUND.getValue());
+		setResType(HttpResponseMsg.ResType.HTML.getValue());
+		setRedirectUrl(url);
+		setMessage("找不到该页面。");
 		setResponseNow(true);
 	}
 
@@ -74,6 +91,14 @@ public class HttpResponseMsg {
 
 	public String getMessage() {
 		return message;
+	}
+
+	public String getRedirectUrl() {
+		return redirectUrl;
+	}
+
+	public void setRedirectUrl(String redirectUrl) {
+		this.redirectUrl = redirectUrl;
 	}
 
 	public void setMessage(String message) {

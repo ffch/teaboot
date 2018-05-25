@@ -37,7 +37,7 @@ public class FullHttpResponseEncoder extends MessageToMessageEncoder<HttpRespons
 					response.headers().add(HttpHeaderNames.SET_COOKIE, cookie);
 			}
 			if (message.getResCode() == HttpResponseMsg.ResCode.REDIRECT.getValue()) {
-				response.headers().set(HttpHeaderNames.LOCATION, message.getMessage());
+				response.headers().set(HttpHeaderNames.LOCATION, message.getRedirectUrl());
 			}
 			// 强制keep-alive
 			response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);

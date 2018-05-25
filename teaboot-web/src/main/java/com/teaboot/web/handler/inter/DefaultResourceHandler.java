@@ -69,10 +69,7 @@ public class DefaultResourceHandler extends ResourceHandler {
 				break;
 			case HTML:
 				String urlMsg = res.toString();
-				hrm.setResCode(HttpResponseMsg.ResCode.REDIRECT.getValue());
-
-				hrm.setMessage(urlMsg);
-				hrm.setResType(HttpResponseMsg.ResType.HTML.getValue());
+				hrm.setRedirect(urlMsg);
 				break;
 			case TEXT:
 				String resMsg = res.toString();

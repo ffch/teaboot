@@ -14,6 +14,7 @@ import com.teaboot.context.utils.StringUtil;
 import com.teaboot.web.http.HttpResponseMsg.ResCode;
 import com.teaboot.web.http.HttpResponseMsg.ResType;
 import com.teaboot.web.session.HttpSession;
+import com.teaboot.web.session.ServerContext;
 import com.teaboot.web.session.SessionManager;
 
 import io.netty.buffer.ByteBuf;
@@ -24,6 +25,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.CookieEncoder;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
@@ -86,12 +88,27 @@ public class HttpRequestMsg extends DefaultHttpRequest {
 		this.content = content;
 	}
 
+	public String getOriginUrl() {
+		try {
+			URI uri = new URI(uri());
+			return uri.getPath();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public String getUrl() {
 		if (StringUtil.isEmpty(url)) {
 			URI uri;
 			try {
 				uri = new URI(uri());
-				setUrl(uri.getPath());
+				String path = uri.getPath();
+				if (path.startsWith(ServerContext.getServerPath())) {
+					path = path.replaceFirst(ServerContext.getServerPath(), "/");
+				}
+
+				setUrl(path);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
@@ -109,22 +126,32 @@ public class HttpRequestMsg extends DefaultHttpRequest {
 		if (cookie != null) {
 			sid = cookie.value();
 		}
-		HttpSession session = doGetSession(sid);
+		HttpSession session = doGetSession(sid, false);
 		return session;
 	}
 
-	public HttpSession doGetSession(String sid) {
-		HttpSession httpSession = null;
-		if (sid != null) {
-			return SessionManager.getInstance().getSession(sid);
-		} else {
-			httpSession = SessionManager.getInstance().createSession(null);
+	public HttpSession getSession(boolean refresh) {
+		Cookie cookie = cookies.get(HttpSession.SESSIONID);
+		String sid = null;
+		if (cookie != null) {
+			sid = cookie.value();
+		}
+		return doGetSession(sid, refresh);
+	}
+
+	public HttpSession doGetSession(String sid, boolean refresh) {
+		HttpSession httpSession = SessionManager.getInstance().getSession(sid, refresh);
+
+		if (httpSession.isNew()) {
 			ServerCookieEncoder encoder = ServerCookieEncoder.LAX;
 			List<String> cookies = new ArrayList<>();
-			cookies.add(encoder.encode(HttpSession.SESSIONID, httpSession.getId()));
+			Cookie cookie = new DefaultCookie(HttpSession.SESSIONID, httpSession.getId());
+			cookie.setPath(ServerContext.getServerName());
+			cookies.add(encoder.encode(cookie));
 			hrm.setEncodedCookie(cookies);
-			return httpSession;
 		}
+		return httpSession;
+
 	}
 
 	public HttpResponseMsg getReponse() {
@@ -135,6 +162,18 @@ public class HttpRequestMsg extends DefaultHttpRequest {
 		hrm.setResCode(resCode.getValue());
 		hrm.setResType(resType.getValue());
 		hrm.setMessage(message);
+		return hrm;
+	}
+
+	public HttpResponseMsg getReponse(ResCode resCode, ResType resType, String message, String url) {
+		hrm.setResCode(resCode.getValue());
+		hrm.setResType(resType.getValue());
+		hrm.setMessage(message);
+		String urlPath = ServerContext.getServerPath();
+		if(url.startsWith("/")){
+			urlPath = urlPath + url.substring(1);
+		}
+		hrm.setRedirectUrl(urlPath);
 		return hrm;
 	}
 
@@ -153,12 +192,12 @@ public class HttpRequestMsg extends DefaultHttpRequest {
 
 		try {
 			URI uri = new URI(uri());
-			setUrl(uri.getPath());
 			if (uri.getQuery() != null && !"".equals(uri.getQuery())) {
 				Map<String, Object> params = createGetParamMap(uri.getQuery());
 				setParams(params);
 			}
-			if(params == null)params = new HashMap<>();
+			if (params == null)
+				params = new HashMap<>();
 			if (hr instanceof FullHttpRequest) {
 				FullHttpRequest request = (FullHttpRequest) hr;
 				setContent(request.content());
